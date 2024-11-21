@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>View All Images</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -34,91 +33,50 @@
             border: 1px solid #333; /* Subtle border */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7); /* Darker shadow */
         }
-
-        #downloadBtn {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        #downloadBtn:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
     <h1>All Images Viewer</h1>
-    <button id="downloadBtn">Download as PDF</button>
     <div id="imageViewer"></div>
 
     <script>
-        async function loadImages() {
+        function loadImages() {
+            // Define the number of images for each unit
             const unitImages = {
-                1: 28,
-                2: 31,
-                3: 31,
-                4: 27,
-                5: 26,
-                6: 27,
-                7: 33
+                1: 28, // Unit 1 has 28 images
+                2: 31, // Unit 2 has 31 images
+                3: 31, // Unit 3 has 31 images
+                4: 27, // Unit 4 has 27 images
+                5: 26, // Unit 5 has 26 images
+                6: 27, // Unit 6 has 27 images
+                7: 33  // Unit 7 has 33 images
             };
 
             const imageViewer = document.getElementById('imageViewer');
-            const totalUnits = Object.keys(unitImages).length;
+            const units = Object.keys(unitImages);
+            const totalUnits = units.length;
 
+            // Load images in sequence (unit 1, unit 2, ...)
             for (let unit = 1; unit <= totalUnits; unit++) {
                 const imageCount = unitImages[unit] || 0;
 
                 for (let img = 1; img <= imageCount; img++) {
+                    // Construct URL, removing "b" for units 5 to 7
                     const hasB = unit < 5 ? "b" : "";
                     const url = `https://static.hentaicdn.com/hentai/17599/${unit}${hasB}/ccdn${String(img).padStart(4, '0')}.jpg`;
 
+                    // Create an image element
                     const imgElement = document.createElement('img');
                     imgElement.src = url;
                     imgElement.alt = `Unit ${unit} - Image ${img}`;
-                    imgElement.crossOrigin = "anonymous";
+
+                    // Add image to the viewer
                     imageViewer.appendChild(imgElement);
                 }
             }
         }
 
-        async function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            const images = document.querySelectorAll('#imageViewer img');
-
-            for (let i = 0; i < images.length; i++) {
-                const img = images[i];
-
-                await new Promise((resolve) => {
-                    img.onload = resolve;
-                });
-
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.naturalWidth;
-                canvas.height = img.naturalHeight;
-                ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
-
-                const imgData = canvas.toDataURL('image/jpeg');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (img.naturalHeight * pdfWidth) / img.naturalWidth;
-
-                if (i !== 0) pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            }
-
-            pdf.save('Images.pdf');
-        }
-
-        document.getElementById('downloadBtn').addEventListener('click', generatePDF);
+        // Load images on page load
         window.onload = loadImages;
     </script>
 </body>
